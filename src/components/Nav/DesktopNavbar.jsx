@@ -5,6 +5,7 @@ import kupass from "../../images/logo.PNG";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { queryclient } from "../../lib/react-query";
+import { storage } from "../../utils";
 
 const Nav = styled.nav`
   position: fixed;
@@ -96,7 +97,7 @@ export default function DesktopNavbar() {
           />
         </Search>
         <Link to="/signin"
-          onClick={()=>window.alert("로그아웃 성공!!")}>
+          onClick={() => { window.alert("로그아웃 성공!!"); storage.clearToken() }}>
           <Login>로그아웃</Login>
         </Link>
       </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import DesktopNavbar from "../components/Nav/DesktopNavbar";
 import DesktopSideBar from "../components/Sidebar/DesktopSidebar";
+import { storage } from "../utils";
 
 export default function DeskTopLayout(props) {
   const location = useLocation();
@@ -25,8 +26,8 @@ export default function DeskTopLayout(props) {
         overflow: "hidden",
       }}
     >
-      {location.pathname != "/register" && location.pathname != "/signin" && (
-        <DesktopNavbar />
+      {location.pathname != "/register" && location.pathname !== "/signin"  && (
+        storage.getToken() ? <DesktopNavbar /> : null
       )}
       <div
         style={{
@@ -38,7 +39,7 @@ export default function DeskTopLayout(props) {
         }}
       >
         {location.pathname != "/register" && location.pathname != "/signin" && (
-          <DesktopSideBar />
+          storage.getToken() ? <DesktopSideBar  /> : null
         )}
         <div style={{ width: "100%", height: "100%", marginTop: "7rem" }}>
           {props.children}
