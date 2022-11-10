@@ -14,7 +14,7 @@ const Router = () => {
           <Route path="/" element={<Register />} />
           <Route path="/register" element={<Register />} />
           <Route path="/signin" element={<SignIn />} />
-          <Route path="/*" element={<PostList />} />
+          {/* //<Route path="/*" element={<PostList />} /> */}
            <Route path="/menu/키워드편집" element={<KeywordEdit />} />
           <Route path="/home" element={<PostList />} />
          
