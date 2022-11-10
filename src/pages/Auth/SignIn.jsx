@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signin } from "../../api";
 import Button from "../../components/Common/Button";
 import useInput from "../../hooks/useInput";
+import { storage } from "../../utils";
 import { AuthWrapper } from "./components/AuthWrapper";
 import InputWithLabel from "./components/InputWithLabel";
 
@@ -17,8 +18,8 @@ export default function SignIn() {
       naviagte(`/home`, { replace: true });
       console.log(data);
       queryclient.setQueryData("keywords", data);
-      
-      console.log("success", data, variables, context);
+      storage.setName(variables?.nickname);
+      console.log("success", data, variables, variables.nickname);
     },
     onError: (error, variable, context) => {
       window.alert(error.message);

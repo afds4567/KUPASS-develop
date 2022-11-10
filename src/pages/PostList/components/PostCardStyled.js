@@ -47,7 +47,8 @@ export const News = styled.span`
   background: #a4c34a;
   color: white;
   font-weight: 600;
-  margin: .25em .1em
+  margin: .25em .1em;
+  margin-left:1rem;
 `;
 export const Cat = styled.span`
   display: inline-block;
@@ -63,7 +64,7 @@ export const Cat = styled.span`
   };
   color: white;
   font-weight: 600;
-  margin: .25em .1em
+  margin: .25em .1em;
 `;
 export const Title = styled.div`
   font-size: 1rem;

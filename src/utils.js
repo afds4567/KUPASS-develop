@@ -3,4 +3,7 @@ export const storage = {
   setToken: (token) =>
     window.localStorage.setItem("token", JSON.stringify(token)),
   clearToken: () => window.localStorage.removeItem("token"),
+  setName: (name) =>
+    window.localStorage.setItem("name", JSON.stringify(name)),
+  getName : () => JSON.parse(window.localStorage.getItem("name"))
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { useMatch, useNavigate } from "react-router-dom";
 import useIntersectionObserver from "../../../hooks/useIntersectionObserver";
 import {
@@ -23,11 +24,7 @@ export default function PostCard({ onClick,post, isLastItem, onFetchMoreFeeds })
   const entry = useIntersectionObserver(ref, {});
   const isIntersecting = !!entry?.isIntersecting;
   const bigNewsMatch = useMatch("/news/:newsId");
-  const onCardClicked = (newsId) => {
-      
-    navigate(`/news/${newsId}`);
-    console.log(bigNewsMatch)
-    };
+  
   const handleTagsStyle = () => {
     const tags = document.querySelectorAll(".tag_list");
 
@@ -46,10 +43,10 @@ export default function PostCard({ onClick,post, isLastItem, onFetchMoreFeeds })
   useEffect(() => {
     handleTagsStyle();
   });
-  useEffect(() => {
-    isLastItem && isIntersecting && onFetchMoreFeeds();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLastItem, isIntersecting]);
+  // useCallback(async() => {
+  //   isLastItem && isIntersecting && onFetchMoreFeeds();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isLastItem, isIntersecting]);
   return (
     <Card
       ref={ref}

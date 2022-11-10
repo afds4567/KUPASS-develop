@@ -5,7 +5,6 @@ const client = axios.create({ baseUrl: "https://konkukstudy.site" });
 const request = ({ ...options }) => {
   client.defaults.headers.common.Authorization = `Bearer ${storage.getToken()}`;
   client.defaults.headers.get["Access-Control-Allow-Origin"] = "*";
-  console.log(storage.getToken());
   const onSuccess = (response) => response;
   const onError = (error) => {
     // optionaly catch errors and add some additional logging here
@@ -45,7 +44,17 @@ export async function signin({ nickname, password }) {
     window.alert(e);
   }
 }
-
+export const setUserKeywords = async (nickname, keyword) => {
+  const res = await axios.put(`api/user/${nickname}/keywords/${keyword}`)
+  console.log(res)
+  return res;
+}
+export const deletUserKeywords = async (nickname, keyword) => {
+  console.log(nickname)
+  const res = await axios.delete(`api/user/${nickname}/keywords/${keyword}`)
+  console.log(res)
+  return res;
+}
 const getNewsFeeds = (pageParams, filter) => {
   request({
       url: `/api/search/article?publisher=${filter}&page=${pageParams}`,

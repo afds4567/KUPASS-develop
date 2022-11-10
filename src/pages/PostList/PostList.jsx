@@ -1,14 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import styled, { css } from "styled-components";
 import PostCard from "./components/PostCard";
 import axios from "axios";
-import { useInfiniteQuery, useQuery } from "react-query";
+import { useInfiniteQuery, useQueries, useQuery, useQueryClient } from "react-query";
 import { Navigate, useLocation, useMatch, useNavigate, useSearchParams } from "react-router-dom";
 import { storage } from "../../utils";
 import NEWS_LIST from "../../NEWS_LIST.json"
 import { List, Icon, Label, Modal, Tab } from "semantic-ui-react";
 import { Cat, Content, News, Title } from "./components/PostCardStyled";
 import { useInView } from 'react-intersection-observer';
+import { queryclient } from "../../lib/react-query";
+import { useInfiniteScrollQuery } from "./useInfiniteScrollQuery";
 const Post = styled.div`
   display: flex;
   justify-content: center;
@@ -82,67 +84,64 @@ const PostNone = styled.div`
 
 export default function PostList() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const searchMatch = location.pathname == "/search";
+
   const [serachParams, _] = useSearchParams();
   const keyword = serachParams.get("keyword");
   const PUBLISHER = NEWS_LIST.data;
   const [filter, setFilter] = useState("");
   const [feeds, setFeeds] = useState([]);
-  const [isLast, setIsLast] = useState(false);
-  const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false)
-  const bigNewsMatch = useMatch("/news/:newsId");
   const [category, setCategory] = useState('')
   const [article, setArticle] = useState("");
-  const [ref, isView] = useInView();
-  
   const panes = [
-  {
-    menuItem: '전체',
-      render: () => { setCategory("");  }
-  },
-  {
-    menuItem: '정치',
-    render: () =>{setCategory("정치") }
-  },
-  {
-    menuItem: '경제',
-    render: () => { setCategory("경제");  }
-  },
-  {
-    menuItem: '사회',
-    render: () => { setCategory("사회");  }
+    {
+      menuItem: '전체',
+      render: () => { setCategory(""); }
     },
-  {
-    menuItem: '생활문화',
-    render: () => { setCategory("생활문화"); }
+    {
+      menuItem: '정치',
+      render: () => { setCategory("정치") }
     },
-  {
-    menuItem: '세계',
-    render: () => { setCategory("세계");  }
+    {
+      menuItem: '경제',
+      render: () => { setCategory("경제"); }
     },
-  {
-    menuItem: 'IT과학',
-    render: () => { setCategory("IT과학"); }
-  },
-  {
-    menuItem: '오피니언',
-    render: () => { setCategory("오피니언");  }
-  },
-]
+    {
+      menuItem: '사회',
+      render: () => { setCategory("사회"); }
+    },
+    {
+      menuItem: '생활문화',
+      render: () => { setCategory("생활문화"); }
+    },
+    {
+      menuItem: '세계',
+      render: () => { setCategory("세계"); }
+    },
+    {
+      menuItem: 'IT과학',
+      render: () => { setCategory("IT과학"); }
+    },
+    {
+      menuItem: '오피니언',
+      render: () => { setCategory("오피니언"); }
+    },
+  ]
   const onCardClicked = (newsId) => {
-    console.log(clickedNews)
-    setArticle(feeds?.find((feed) => feed.articleId === Number(newsId)));
-  };
-  const clickedNews =
-  bigNewsMatch?.params.newsId &&
-  feeds?.find((feed) => feed.articleId === Number(bigNewsMatch.params.newsId));
+    console.log(123, getBoard.pages, newsId)
+    const a = getBoard?.pages?.map((pag, i) => {
+      if (pag.board_page.find((feed) => feed.articleId === Number(newsId))) {
+        setArticle(pag.board_page.find((feed) => feed.articleId === Number(newsId)))
+      }
+    });
+  }
 
   const { data: keywords } = useQuery("keywords", {
     initialData: "",
+    cacheTime: Infinity,
     staleTime: Infinity,
   });
+  
   
   const {
     data: { title, item, isTag },
@@ -152,71 +151,20 @@ export default function PostList() {
   });
   //here
   
-  const getFeeds = async () => {
-    let params;
-    window.scrollTo(0, 0);
-    if (keyword)
-      params = {
-        keyword: keyword,
-        page:page,
-        publisher: filter,
-        category,
-      };
-    else params = { keyword, page: page , publisher: filter, category };
-    //axios.defaults.withCredentials = true;
-    try {
-      axios.defaults.headers.common.Authorization = `Bearer ${storage.getToken()}`;
-      const res = await axios.get("/api/search/article", {
-        params,
-      });
-      const feeds = res.data.articles;
-      //const isLast = res.data.totalPages === page;
-      //const isLast = page === 10;
-      setFeeds((prev) => [...feeds]);
-      //setIsLast(isLast);
-      return feeds
-      console.log(page, isLast);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const getInfiniteFeeds = async () => {
-    let params;
-    if (keyword)
-      params = {
-        keyword: keyword,
-        page:page,
-        publisher: filter,
-        category,
-      };
-    else params = { keyword, page:  page , publisher: filter, category };
-    //axios.defaults.withCredentials = true;
-    try {
-      axios.defaults.headers.common.Authorization = `Bearer ${storage.getToken()}`;
-      const res = await axios.get("/api/search/article", {
-        params,
-      });
-      const feeds = res.data.articles;
-      //const isLast = res.data.totalPages === page;
-      const isLast = page === 10;
-      setFeeds((prev) => [...prev,...feeds]);
-      setIsLast(isLast);
-    
-      console.log(page, isLast);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-  const { data} = useInfiniteQuery(`/api/search/article?publisher=${filter}&category=${category}&keyword=${keyword}`, getFeeds, {
-    });
-  useEffect(() => {
-  !isLast && getInfiniteFeeds();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [page]);
+
+  
   const handleFilter = (e) => {
     setFilter(e.target.value);
   };
-  
+  const { getBoard, getNextPage, getBoardIsSuccess, getNextPageIsPossible } = useInfiniteScrollQuery({ category, filter,keyword });
+  const [ref, isView] = useInView();
+   useEffect(() => {
+    // 맨 마지막 요소를 보고있고 더이상 페이지가 존재하면
+    // 다음 페이지 데이터를 가져옴
+    if (isView && getNextPageIsPossible) {
+      getNextPage();
+    }
+  }, [isView, getBoard,category,filter]);
   return (
     <Post>
       <PostTop>
@@ -228,7 +176,8 @@ export default function PostList() {
           }}
         >
           <p style={{ fontSize: "2rem", color: "grey",marginLeft:"0.5rem"}}>
-            {title ? (searchMatch ? keyword : title) : title}
+            {/* {title ? (searchMatch ? keyword : title) : title} */}
+            {keyword}
           </p>
           <Select onChange={handleFilter} value={filter}>
             <option value="" selected disabled hidden>신문사를 설정하세요</option>
@@ -240,49 +189,96 @@ export default function PostList() {
           </Select>
         </div>
       </PostTop>
-      <Tab onClick={() => { setPage(0); window.scrollTo(0, 0); }} menu={{ secondary: true, pointing: true }} style={{"margin-left":"1rem"}} panes={panes} />
-      <PostCards style={{ overflow: "auto" }} listEmpty={feeds.length === 0} >
-        {feeds.length !== 0 ? (
-          feeds.map((feed, idx) => (
-            <Modal
-              closeIcon
-              style={{ "margin-top": "10rem","height":"55vh","overflow":"auto"}}
-              centered={false}
-              open={open}
-              onClose={() => setOpen(false)}
-              onOpen={() => setOpen(true)}
-              trigger={
-                <PostCard
-                  onClick={() => onCardClicked(feed.articleId)}
-                  key={("postcard", idx)}
-                  isLastItem={feeds.length-1 === idx}
-                  onFetchMoreFeeds={() => setPage((prev) => prev + 1)}
-                  post={feed}
-                  
-                />}
-            >
-              <Modal.Content>
-                <News style={{"margin-left":"1rem"}}>{article.publisher}</News>
-                <Cat cat={article?.category}>{article?.category}</Cat>
-                <Title style={{ "font-size": "2rem" }}>
-                  {article?.title}
-                </Title>
-                <Content><a href={article?.source} target="_blank">원문 기사 보기</a></Content>
-                <Content style={{ "font-size": "1rem" , "line-height": "1.5rem","margin-bottom":"2rem","margin-top":"2rem"}}>
-                  {article?.summary}
-                </Content>
-                <div style={{"margin-left":"1rem"}}>
-                  {article?.keywords?.map((key, idx) => <Label>{key}</Label>)}
-                  </div>
-              </Modal.Content>
-              
-            </Modal>
-          ))
-        ) : (
+      <Tab onClick={() => {  window.scrollTo(0, 0); }} menu={{ secondary: true, pointing: true }} style={{marginLeft:"1rem"}} panes={panes} />
+      <PostCards style={{ overflow: "auto" }} listEmpty={getBoard?.length === 0} >
+        {
+          getBoardIsSuccess && getBoard.pages && getBoard?.length !== 0
+            ? getBoard.pages.map((page_data, page_num) => {
+              const board_page = page_data.board_page;
+              return board_page.map((feed, idx) => {
+                if (
+                  // 마지막 요소에 ref 달아주기
+                  getBoard.pages.length - 1 === page_num &&
+                  board_page.length - 1 === idx
+                ) {
+                  return (
+                    <div ref={ref} key={feed.articleId}>
+                      <Modal
+                      
+                      closeIcon
+                      style={{ "margin-top": "10rem", "height": "55vh", "overflow": "auto" }}
+                      centered={false}
+                      open={open}
+                      onClose={() => setOpen(false)}
+                      onOpen={() => setOpen(true)}
+                      trigger={
+                        <PostCard
+                          onClick={() => onCardClicked(feed.articleId)}
+                          key={("postcard", idx)}
+                          
+                          post={feed}
+                        />
+                      }
+                    >
+                      <Modal.Content>
+                        <News style={{ "margin-left": "1rem" }}>{article.publisher}</News>
+                        <Cat cat={article?.category}>{article?.category}</Cat>
+                        <Title style={{ "font-size": "2rem" }}>
+                          {article?.title}
+                        </Title>
+                        <Content><a href={article?.source} target="_blank">원문 기사 보기</a></Content>
+                        <Content style={{ "font-size": "1rem", "line-height": "1.5rem", "margin-bottom": "2rem", "margin-top": "2rem" }}>
+                          {article?.summary}
+                        </Content>
+                        <div style={{ "margin-left": "1rem" }}>
+                          {article?.keywords?.map((key, idx) => <Label>{key}</Label>)}
+                        </div>
+                      </Modal.Content>
+                    </Modal></div>
+)
+                } else {
+                  return (
+                    <Modal
+                      key={feed?.articleId}
+                      closeIcon
+                      style={{ "margin-top": "10rem", "height": "55vh", "overflow": "auto" }}
+                      centered={false}
+                      open={open}
+                      onClose={() => setOpen(false)}
+                      onOpen={() => setOpen(true)}
+                      trigger={
+                        <PostCard
+                          onClick={() => onCardClicked(feed.articleId)}
+                          key={("postcard", idx)}
+                         
+                          post={feed}
+                        />
+                      }
+                    >
+                      <Modal.Content>
+                        <News style={{ "margin-left": "1rem" }}>{article?.publisher}</News>
+                        <Cat cat={article?.category}>{article?.category}</Cat>
+                        <Title style={{ "font-size": "2rem" }}>
+                          {article?.title}
+                        </Title>
+                        <Content><a href={article?.source} target="_blank">원문 기사 보기</a></Content>
+                        <Content style={{ "font-size": "1rem", "line-height": "1.5rem", "margin-bottom": "2rem", "margin-top": "2rem" }}>
+                          {article?.summary}
+                        </Content>
+                        <div style={{ "margin-left": "1rem" }}>
+                          {article?.keywords?.map((key, idx) => <Label>{key}</Label>)}
+                        </div>
+                      </Modal.Content>
+                    </Modal>
+                  )
+                }
+              }
+              )
+            })
+         : (
           <PostNone>Contents 없음</PostNone>
         )}
       </PostCards>
-      
     </Post>
   );
 }

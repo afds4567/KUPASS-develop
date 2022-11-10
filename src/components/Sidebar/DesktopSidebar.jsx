@@ -2,13 +2,12 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Navigation } from "react-minimal-side-navigation";
 import { Icon } from "semantic-ui-react";
-
-//import "react-minimal-side-navigation/lib/ReactMinimalSideNavigation.css";
 import "../../styles/sidebar.css";
-import { storage } from "../../utils";
 import { useEffect } from "react";
 import { useQuery } from "react-query";
 import { queryclient } from "../../lib/react-query";
+import { storage } from "../../utils";
+import axios from "axios";
 const Bar = styled.div`
   position: sticky;
   top: 10rem;
@@ -20,25 +19,36 @@ const Bar = styled.div`
 export default function DesktopSideBar() {
   const navigate = useNavigate();
   const setArr = [];
-  const { data: keywords } = useQuery("keywords", {
+  const { data: keywords } = useQuery(["keywords"],() => axios.get(`https://konkukstudy.site/api/user/${storage.getName()}/keywords`), {
     initialData: " ",
     staleTime: Infinity,
   });
 
   useEffect(() => {
-    const { token } = storage.getToken() || null;
-    if (keywords) {
-      console.log(keywords);
-      keywords.forEach((keyword) => {
+    const tmp = {};
+    tmp.title = "Edit";
+    tmp.itemId = { item: "addKeyword", title: "키워드편집" };
+    setArr.push(tmp);
+    console.log("update")
+    if (!keywords?.data?.keywords) {
+      keywords?.forEach((keyword) => {
         const curObj = {};
-        console.log(keyword);
         curObj.title = keyword;
         curObj.itemId = `/tags/${keyword}`;
         setArr.push(curObj);
       });
     }
-  }, []);
-
+     else if (keywords?.data?.keywords) {
+      console.log(keywords)
+      keywords?.data?.keywords.forEach((key) => {
+        const curObj = {};
+        curObj.title = key;
+        curObj.itemId = `/tags/${key}`;
+        setArr.push(curObj);
+      })
+    }
+     
+  }, [keywords]);
   return (
     <>
       <Bar>
@@ -50,7 +60,8 @@ export default function DesktopSideBar() {
                 title: `${itemId.title}`,
                 isTag: false,
               });
-              navigate(`/home?menu=${itemId.title}`);
+              if(itemId.item=='addKeyword') navigate(`/menu/키워드편집`)
+              else navigate(`/home?menu=${itemId.title}`);
             }
             if (typeof itemId === "string") {
               queryclient.setQueryData("title", {
@@ -58,54 +69,27 @@ export default function DesktopSideBar() {
                 title: `${itemId.slice(6)}`,
                 isTag: true,
               });
+            
               if (itemId.length >= 6)
                 navigate(`/search?keyword=${itemId.slice(6)}`);
-            }
+              }
           }}
           items={[
             {
               title: "피드",
               itemId: { item: "main", title: "피드" },
               elemBefore: () => (
-                <Icon name="th large" style={{ fontSize: "1.2rem" }} />
+                <Icon name="th large" style={{ fontSize: "1.5rem" }} />
               ),
             },
-
             {
-              title: "관심태그",
+              title: "키워드",
               itemId: "/tags",
               elemBefore: () => (
-                <Icon name="tags" style={{ fontSize: "1.2rem" }} />
+                <Icon name="tags" style={{ fontSize: "1.5rem" }} />
               ),
-              subNav: keywords ? setArr : null,
-              //[
-              // {
-              //   title: "Projects",
-              //   itemId: "/management/projects",
-              //   // Requires v1.9.1+ (https://github.com/abhijithvijayan/react-minimal-side-navigation/issues/13)
-              //   elemBefore: () => <Icon name="cloud-snow" />,
-              // },
-              // {
-              //   title: "Members",
-              //   itemId: "/management/members",
-              //   elemBefore: () => <Icon name="coffee" />,
-              // },
-              //],
+              subNav:setArr
             },
-            {
-              title: "키워드추가",
-              itemId: { item: "addKeyword", title: "키워드추가" },
-              elemBefore: () => (
-                <Icon name="bookmark" style={{ fontSize: "1.2rem" }} />
-              ),
-            },
-            // {
-            //   title: "읽은 목록",
-            //   itemId: { item: "study", title: "읽은 목록" },
-            //   elemBefore: () => (
-            //     <Icon name="eye" style={{ fontSize: "1.2rem" }} />
-            //   ),
-            // },
           ]}
         />
       </Bar>
