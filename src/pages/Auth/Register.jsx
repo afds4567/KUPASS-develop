@@ -24,7 +24,7 @@ export default function Register() {
       naviagte(`/signin`);
     },
     onError: (error, variable, context) => {
-      window.alert(error.response.status);
+      //window.alert(error.response.status);
       const code = error.response.status;
       const IdFormat = error.response.data.message === "not supported id format";
       const pwdFormat = error.response.data.message === "not supported pw format";

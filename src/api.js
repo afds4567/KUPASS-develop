@@ -29,21 +29,23 @@ const getUserKeywords = (nickname) =>
   });
 export async function signin({ nickname, password }) {
   const data = { nickname, password };
-  try {
+  
     console.log("SUCCESS SIGNIN");
-    const response = await axios.post("api/authenticate", data);
-    console.log(response);
-    const { token } = response.data;
-    storage.setToken(token);
-    console.log(token);
-    const result = await getUserKeywords(nickname);
-    console.log(result);
-    axios.defaults.headers.common.Authorization = `Bearer ${storage.getToken()}`;
-    return result.data.keywords;
-  } catch (e) {
-    window.alert(e);
+  const response = await axios.post("api/authenticate", data);
+  console.log(response)
+    if (response.status===401) alert("login")
+    else {
+      const { token } = response.data;
+      storage.setToken(token);
+      console.log(token);
+      const result = await getUserKeywords(nickname);
+      console.log(result);
+      axios.defaults.headers.common.Authorization = `Bearer ${storage.getToken()}`;
+      return result.data.keywords;
+    }
+    return response
   }
-}
+
 export const setUserKeywords = async (nickname, keyword) => {
   const res = await axios.put(`api/user/${nickname}/keywords/${keyword}`)
   console.log(res)
