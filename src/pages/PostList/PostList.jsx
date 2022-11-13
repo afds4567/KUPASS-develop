@@ -84,12 +84,10 @@ const PostNone = styled.div`
 
 export default function PostList() {
   const location = useLocation();
-
   const [serachParams, _] = useSearchParams();
   const keyword = serachParams.get("keyword");
   const PUBLISHER = NEWS_LIST.data;
   const [filter, setFilter] = useState("");
-  const [feeds, setFeeds] = useState([]);
   const [open, setOpen] = useState(false)
   const [category, setCategory] = useState('')
   const [article, setArticle] = useState("");
@@ -128,7 +126,6 @@ export default function PostList() {
     },
   ]
   const onCardClicked = (newsId) => {
-    console.log(123, getBoard.pages, newsId)
     const a = getBoard?.pages?.map((pag, i) => {
       if (pag.board_page.find((feed) => feed.articleId === Number(newsId))) {
         setArticle(pag.board_page.find((feed) => feed.articleId === Number(newsId)))
@@ -149,14 +146,11 @@ export default function PostList() {
     initialData: "",
     staleTime: Infinity,
   });
-  //here
-  
 
-  
   const handleFilter = (e) => {
     setFilter(e.target.value);
   };
-  const { getBoard, getNextPage, getBoardIsSuccess, getNextPageIsPossible } = useInfiniteScrollQuery({ category, filter,keyword });
+  const { getBoard, getNextPage, getBoardIsSuccess, getNextPageIsPossible,isLoading } = useInfiniteScrollQuery({ category, filter,keyword });
   const [ref, isView] = useInView();
    useEffect(() => {
     // 맨 마지막 요소를 보고있고 더이상 페이지가 존재하면
@@ -164,7 +158,8 @@ export default function PostList() {
     if (isView && getNextPageIsPossible) {
       getNextPage();
     }
-  }, [isView, getBoard,category,filter]);
+   }, [isView, getBoard, category, filter]);
+
   return (
     <Post>
       <PostTop>
@@ -177,7 +172,7 @@ export default function PostList() {
         >
           <p style={{ fontSize: "2rem", color: "grey",marginLeft:"0.5rem"}}>
             {/* {title ? (searchMatch ? keyword : title) : title} */}
-            {keyword}
+            {keyword?keyword : title}
           </p>
           <Select onChange={handleFilter} value={filter}>
             <option value="" selected disabled hidden>신문사를 설정하세요</option>
@@ -190,7 +185,7 @@ export default function PostList() {
         </div>
       </PostTop>
       <Tab onClick={() => {  window.scrollTo(0, 0); }} menu={{ secondary: true, pointing: true }} style={{marginLeft:"1rem"}} panes={panes} />
-      <PostCards style={{ overflow: "auto" }} listEmpty={getBoard?.length === 0} >
+      <PostCards style={{ overflow: "auto" }} listEmpty={getBoard?.pages[0]?.board_page?.length === 0} >
         {
           getBoardIsSuccess && getBoard.pages && getBoard?.length !== 0
             ? getBoard.pages.map((page_data, page_num) => {
@@ -275,9 +270,10 @@ export default function PostList() {
               }
               )
             })
-         : (
+         :  isLoading? <PostNone>Loading...</PostNone> :(
           <PostNone>Contents 없음</PostNone>
-        )}
+            )}
+        {(getBoard?.pages[0]?.board_page?.length===0) && <PostNone>Contents 없음</PostNone>}
       </PostCards>
     </Post>
   );

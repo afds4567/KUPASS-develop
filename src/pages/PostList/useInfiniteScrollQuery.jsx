@@ -24,6 +24,7 @@ export const useInfiniteScrollQuery = (props) => {
     fetchNextPage: getNextPage,
     isSuccess: getBoardIsSuccess,
     hasNextPage: getNextPageIsPossible,
+    isLoading
   } = useInfiniteQuery([props.category,props.filter,props.keyword], getPageBoard, {
     getNextPageParam: (lastPage, pages) => {
       // lastPage와 pages는 콜백함수에서 리턴한 값을 의미한다!!
@@ -34,5 +35,5 @@ export const useInfiniteScrollQuery = (props) => {
     },
   });
 
-  return { getBoard, getNextPage, getBoardIsSuccess, getNextPageIsPossible };
+  return { isLoading,getBoard, getNextPage, getBoardIsSuccess, getNextPageIsPossible };
 }
