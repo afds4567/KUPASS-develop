@@ -5,5 +5,8 @@ export const storage = {
   clearToken: () => window.localStorage.removeItem("token"),
   setName: (name) =>
     window.localStorage.setItem("name", JSON.stringify(name)),
-  getName : () => JSON.parse(window.localStorage.getItem("name"))
+  getName: () => JSON.parse(window.localStorage.getItem("name")),
+  getKeyowrds: () => JSON.parse(window.localStorage.getItem("keywords")),
+  setKeywords:(keyword)=>window.localStorage.setItem("keyword",JSON.stringify(keyword))
+  
 };

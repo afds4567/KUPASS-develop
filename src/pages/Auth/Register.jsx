@@ -11,8 +11,8 @@ import InputWithLabel from "./components/InputWithLabel";
 import RightLink from "./components/RightLink";
 
 export default function Register() {
-  const [nickname, onChangeNickname, setNickname] = useInput("");
-  const [password, onChangePassword, setPassword] = useInput("");
+  const [nickname, onChangeNickname,] = useInput("");
+  const [password, onChangePassword,] = useInput("");
   const [passwordCheck, onChangePaswordCheck] = useInput("");
   const [idError, setIdError] = useState(false);
   const [pwdError, setPwdError] = useState(false);
@@ -34,7 +34,7 @@ export default function Register() {
     },
   });
   const handleSubmit = () => {
-    if (password != passwordCheck) {
+    if (password !== passwordCheck) {
       setPwdError(true);
       setPwdMessage('비밀번호가 일치하지 않습니다. 확인해주세요')
       return;

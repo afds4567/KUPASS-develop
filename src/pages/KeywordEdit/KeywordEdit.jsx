@@ -7,11 +7,16 @@ import { storage } from '../../utils';
 import { CloseIcon, Keyword, KeywordList, KeywordTitle, Post, PostTop, Wrapper } from './components/TagsInputStyled';
 
 export default function KeywordEdit() {
+  const tmp = storage.getKeyowrds()
+  console.log(tmp)
   const { data: keywords, } = useQuery(["keywords"],() => axios.get(`https://konkukstudy.site/api/user/${storage.getName()}/keywords`), {
-    initialData: " ",
-    staleTime: Infinity,
+    initialData: '',
+    //staleTime: Infinity,
+    refetchOnMount:'always',
+    refetchOnWindowFocus: 'always',
   });
-
+  
+  
   const {
     data: { title},
   } = useQuery(["title"], {
@@ -31,7 +36,7 @@ export default function KeywordEdit() {
     }
   }
 
-  const { mutate, isLoading, isError, error, isSuccess } = useMutation(addKeywords, {
+  const { mutate } = useMutation(addKeywords, {
     onSuccess: (data,variables,context) => {
       queryclient.invalidateQueries(['keywords'])
       console.log(data,variables,context)
@@ -60,8 +65,8 @@ export default function KeywordEdit() {
           </div>
           </PostTop>
           <Wrapper>
-        <KeywordList>
-          {!keywords?.data?.keywords?keywords?.map((keyword, index) => (
+        {keywords&& <KeywordList>
+          {!keywords?.data?.keywords ? keywords?.map((keyword, index) => (
             <Keyword key={index}>
               <KeywordTitle>{keyword}</KeywordTitle>
               <CloseIcon
@@ -70,7 +75,7 @@ export default function KeywordEdit() {
                 x
               </CloseIcon>
             </Keyword>
-          )):keywords?.data?.keywords.map((keyword, index) => (
+          )) : keywords?.data?.keywords.map((keyword, index) => (
             <Keyword key={index}>
               <KeywordTitle>{keyword}</KeywordTitle>
               <CloseIcon
@@ -80,7 +85,7 @@ export default function KeywordEdit() {
               </CloseIcon>
             </Keyword>
           ))}
-        </KeywordList>
+        </KeywordList>}
         <input
           type="text"
           onKeyUp={event => event.key === "Enter" ? mutate(event) : null}

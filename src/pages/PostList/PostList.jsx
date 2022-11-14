@@ -1,15 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/jsx-no-target-blank */
+import React, {  useEffect, useState } from "react";
 import styled, { css } from "styled-components";
 import PostCard from "./components/PostCard";
-import axios from "axios";
-import { useInfiniteQuery, useQueries, useQuery, useQueryClient } from "react-query";
-import { Navigate, useLocation, useMatch, useNavigate, useSearchParams } from "react-router-dom";
-import { storage } from "../../utils";
+import {  useQuery } from "react-query";
+import { useSearchParams } from "react-router-dom";
 import NEWS_LIST from "../../NEWS_LIST.json"
-import { List, Icon, Label, Modal, Tab } from "semantic-ui-react";
+import {  Label, Modal, Tab } from "semantic-ui-react";
 import { Cat, Content, News, Title } from "./components/PostCardStyled";
 import { useInView } from 'react-intersection-observer';
-import { queryclient } from "../../lib/react-query";
 import { useInfiniteScrollQuery } from "./useInfiniteScrollQuery";
 const Post = styled.div`
   display: flex;
@@ -83,8 +82,7 @@ const PostNone = styled.div`
 `;
 
 export default function PostList() {
-  const location = useLocation();
-  const [serachParams, _] = useSearchParams();
+  const [serachParams] = useSearchParams();
   const keyword = serachParams.get("keyword");
   const PUBLISHER = NEWS_LIST.data;
   const [filter, setFilter] = useState("");
@@ -126,6 +124,7 @@ export default function PostList() {
     },
   ]
   const onCardClicked = (newsId) => {
+    // eslint-disable-next-line no-unused-vars, array-callback-return
     const a = getBoard?.pages?.map((pag, i) => {
       if (pag.board_page.find((feed) => feed.articleId === Number(newsId))) {
         setArticle(pag.board_page.find((feed) => feed.articleId === Number(newsId)))
@@ -133,15 +132,15 @@ export default function PostList() {
     });
   }
 
-  const { data: keywords } = useQuery("keywords", {
-    initialData: "",
-    cacheTime: Infinity,
-    staleTime: Infinity,
-  });
+  // const { data: keywords } = useQuery("keywords", {
+  //   initialData: "",
+  //   cacheTime: Infinity,
+  //   staleTime: Infinity,
+  // });
   
   
   const {
-    data: { title, item, isTag },
+    data: { title },
   } = useQuery("title", {
     initialData: "",
     staleTime: Infinity,
